@@ -1,0 +1,58 @@
+[
+  {
+    "id": "LOG-68197",
+    "timestamp": "2026-09-30T04:52:48.197Z",
+    "user": "Procurement Integration Bot",
+    "role": "System AI",
+    "action": "PROCUREMENT_REQUISITION",
+    "details": "Auto-generated purchase order PO-2026-4763 for 20 Bottles (4L) of Ethanol, Absolute 99.5% ACS/USP Grade ($970)"
+  },
+  {
+    "id": "LOG-39185",
+    "timestamp": "2026-09-30T04:52:19.185Z",
+    "user": "Dr. Sarah Chen",
+    "role": "Lab Staff",
+    "action": "STOCK_ADJUSTMENT",
+    "details": "Deducted 1 Bottles (4L) of Ethanol, Absolute 99.5% ACS/USP Grade (Cell culture test run). New balance: 7 Bottles (4L)."
+  },
+  {
+    "id": "LOG-25257",
+    "timestamp": "2026-09-30T04:47:05.257Z",
+    "user": "Lab Staff",
+    "role": "Lab Staff",
+    "action": "ASSET_REGISTERED",
+    "details": "AI Natural Language registered a Sorvall ST 16 Centrifuge (AST-1013)"
+  },
+  {
+    "id": "LOG-9001",
+    "timestamp": "2026-09-29T14:30:00Z",
+    "user": "Dr. Sarah Chen",
+    "role": "Lab Staff",
+    "action": "EQUIPMENT_CHECKOUT",
+    "details": "Checked out Eppendorf 5810R Centrifuge for 3 hours protocol (Project Bio-RNA-24)."
+  },
+  {
+    "id": "LOG-9002",
+    "timestamp": "2026-09-29T16:15:00Z",
+    "user": "Carlos Gomez",
+    "role": "Maintenance Personnel",
+    "action": "MAINTENANCE_SCHEDULED",
+    "details": "Logged bi-annual inspection for Tuttnauer Autoclave (Target: 2026-10-15)."
+  },
+  {
+    "id": "LOG-9003",
+    "timestamp": "2026-09-30T08:20:00Z",
+    "user": "Marcus Vance",
+    "role": "Lab Administrator",
+    "action": "STOCK_ADJUSTMENT",
+    "details": "Recorded usage of 2 racks of Sterile Barrier Pipette Tips (200 µL). Remaining: 6 racks."
+  },
+  {
+    "id": "LOG-9004",
+    "timestamp": "2026-09-30T09:00:00Z",
+    "user": "LabPulse AI Agent",
+    "role": "System AI",
+    "action": "PREDICTIVE_ALERT",
+    "details": "Generated predictive maintenance warning for Waters HPLC (Vibration: 0.89, MTBF exceeded 107%)."
+  }
+]

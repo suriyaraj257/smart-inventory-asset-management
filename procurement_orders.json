@@ -1,0 +1,41 @@
+[
+  {
+    "orderId": "PO-2026-4763",
+    "createdAt": "2026-09-30T04:52:48.195Z",
+    "item": "Ethanol, Absolute 99.5% ACS/USP Grade",
+    "itemId": "CON-501",
+    "quantity": 20,
+    "unit": "Bottles (4L)",
+    "estimatedCost": 970,
+    "vendor": "Sigma-Aldrich / MilliporeSigma",
+    "status": "Transmitted to ERP (SAP Ariba / Oracle Financials)",
+    "erpReference": "SAP-PR-56012",
+    "deliveryLeadTime": "3-5 business days"
+  },
+  {
+    "orderId": "PO-2026-8812",
+    "createdAt": "2026-09-28T11:45:00Z",
+    "item": "Sterile Barrier Filter Pipette Tips (200 µL)",
+    "itemId": "CON-504",
+    "quantity": 40,
+    "unit": "Racks",
+    "estimatedCost": 568,
+    "vendor": "Rainin / Mettler Toledo",
+    "status": "Approved / Sent to ERP",
+    "erpReference": "SAP-PR-99321",
+    "deliveryLeadTime": "3 business days"
+  },
+  {
+    "orderId": "PO-2026-8813",
+    "createdAt": "2026-09-29T15:10:00Z",
+    "item": "HPLC Grade Acetonitrile (MeCN) ≥99.9%",
+    "itemId": "CON-508",
+    "quantity": 16,
+    "unit": "Bottles (4L)",
+    "estimatedCost": 1840,
+    "vendor": "Honeywell Riedel-de Haën",
+    "status": "Pending Department Head Approval",
+    "erpReference": "SAP-PR-99335",
+    "deliveryLeadTime": "5 business days"
+  }
+]

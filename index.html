@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LabPulse | Smart Inventory & Asset Management System</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- JsBarcode -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <!-- Html5Qrcode Scanner -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Left: Brand Logo & Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-emerald-400 flex items-center justify-center shadow-lg">
+            <i data-lucide="flask-conical" class="w-6 h-6 text-white"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-black text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-indigo-200">
+                LabPulse
+              </span>
+              <span class="bg-indigo-500/30 text-indigo-300 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border border-indigo-400/30">
+                Smart Asset OS
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-400 hidden sm:block">Institutional & Laboratory Asset Intelligence</div>
+          </div>
+        </div>
+
+        <!-- Middle: Global Search -->
+        <div class="hidden md:flex items-center flex-1 max-w-md mx-6">
+          <div class="relative w-full">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input 
+              type="text" 
+              id="global-search"
+              placeholder="Search assets, serial numbers, reagents, or chemicals..." 
+              class="w-full pl-9 pr-4 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            >
+          </div>
+        </div>
+
+        <!-- Right: Actions, Role Selector & AI Copilot -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Barcode/QR Scanner Button -->
+          <button onclick="App.openScannerModal()" title="Scan Barcode or QR Code" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 text-xs">
+            <i data-lucide="scan-barcode" class="w-4 h-4 text-emerald-400"></i>
+            <span class="hidden sm:inline">Scanner</span>
+          </button>
+
+          <!-- Notification Bell -->
+          <div class="relative">
+            <button onclick="App.toggleNotificationDropdown()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition relative">
+              <i data-lucide="bell" class="w-4 h-4"></i>
+              <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                0
+              </span>
+            </button>
+
+            <!-- Notification Dropdown -->
+            <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden text-slate-800">
+              <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-bold text-xs text-slate-700">Operational Alerts</span>
+                <span class="text-[11px] text-indigo-600 font-medium">Real-Time</span>
+              </div>
+              <div id="notification-dropdown-list" class="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Role Selector -->
+          <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700">
+            <i data-lucide="shield" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <select id="user-role-select" class="bg-transparent text-xs text-white font-medium focus:outline-none cursor-pointer">
+              <option value="Lab Administrator" class="bg-slate-900 text-white">Role: Lab Administrator</option>
+              <option value="Lab Researcher / Staff" class="bg-slate-900 text-white">Role: Researcher / Staff</option>
+              <option value="Maintenance Engineer" class="bg-slate-900 text-white">Role: Maintenance Engineer</option>
+            </select>
+          </div>
+
+          <!-- AI Assistant Toggle Button -->
+          <button onclick="AIAgent.toggleDrawer()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md ai-button-glow transition">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">AI Copilot</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigation Tabs Bar -->
+    <div class="bg-slate-800 border-t border-slate-700/60">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav class="flex space-x-1 sm:space-x-2 py-1.5 overflow-x-auto text-xs font-medium">
+          <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-tab-btn px-3 py-1.5 rounded-md bg-indigo-700 text-white flex items-center gap-1.5 transition shrink-0">
+            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+            <span>Dashboard</span>
+          </button>
+          <button onclick="App.switchTab('assets')" data-tab="assets" class="nav-tab-btn px-3 py-1.5 rounded-md text-indigo-100 hover:bg-indigo-800 flex items-center gap-1.5 transition shrink-0">
+            <i data-lucide="microscope" class="w-3.5 h-3.5"></i>
+            <span>Equipment & Assets</span>
+          </button>
+          <button onclick="App.switchTab('consumables')" data-tab="consumables" class="nav-tab-btn px-3 py-1.5 rounded-md text-indigo-100 hover:bg-indigo-800 flex items-center gap-1.5 transition shrink-0">
+            <i data-lucide="flask-round" class="w-3.5 h-3.5"></i>
+            <span>Consumables & Stock</span>
+          </button>
+          <button onclick="App.switchTab('maintenance')" data-tab="maintenance" class="nav-tab-btn px-3 py-1.5 rounded-md text-indigo-100 hover:bg-indigo-800 flex items-center gap-1.5 transition shrink-0">
+            <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
+            <span>Maintenance & Calibration</span>
+          </button>
+          <button onclick="App.switchTab('analytics')" data-tab="analytics" class="nav-tab-btn px-3 py-1.5 rounded-md text-indigo-100 hover:bg-indigo-800 flex items-center gap-1.5 transition shrink-0">
+            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+            <span>Usage Analytics</span>
+          </button>
+          <button onclick="App.switchTab('procurement')" data-tab="procurement" class="nav-tab-btn px-3 py-1.5 rounded-md text-indigo-100 hover:bg-indigo-800 flex items-center gap-1.5 transition shrink-0">
+            <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+            <span>ERP & Procurement</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Urgent Alert Banner -->
+  <div id="top-alert-banner" class="hidden bg-gradient-to-r from-red-600 to-amber-600 text-white text-xs py-2 px-4 shadow-sm">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="alert-octagon" class="w-4 h-4 shrink-0"></i>
+        <span id="banner-text">Attention: Overdue maintenance and low-stock thresholds detected.</span>
+      </div>
+      <button onclick="document.getElementById('top-alert-banner').classList.add('hidden')" class="text-white/80 hover:text-white">✕</button>
+    </div>
+  </div>
+
+  <!-- Role Sub-Bar Notification -->
+  <div class="bg-indigo-50/70 border-b border-indigo-100/60 px-4 py-1.5 text-xs text-indigo-900 flex items-center justify-between max-w-7xl mx-auto w-full">
+    <div class="flex items-center gap-2">
+      <span class="font-bold text-indigo-700">Active Profile:</span>
+      <span id="current-role-badge" class="bg-indigo-200/70 px-2 py-0.5 rounded font-mono text-[11px] font-semibold text-indigo-900">Lab Administrator</span>
+      <span id="role-description" class="text-slate-600 text-[11px] hidden sm:inline">Full administrative and procurement privileges active.</span>
+    </div>
+    <div class="flex items-center gap-3 text-[11px] text-slate-500 font-mono">
+      <span>Auto-Sync: <span class="text-emerald-600 font-bold">● Active</span></span>
+      <span>Facility: Central Bio & Chem Complex</span>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content-panel space-y-6">
+      
+      <!-- KPI Stats Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Total Assets</span>
+            <i data-lucide="boxes" class="w-4 h-4 text-indigo-500"></i>
+          </div>
+          <div class="mt-2">
+            <span id="kpi-total-assets" class="text-2xl font-black text-slate-900">0</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Institutional registry</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Operational Rate</span>
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>
+          </div>
+          <div class="mt-2">
+            <span id="kpi-operational-rate" class="text-2xl font-black text-emerald-600">0%</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Ready for research</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Service Due</span>
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+          </div>
+          <div class="mt-2">
+            <span id="kpi-maint-due" class="text-2xl font-black text-amber-600">0</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Calibration / repairs</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Low Stock</span>
+            <i data-lucide="package-search" class="w-4 h-4 text-orange-500"></i>
+          </div>
+          <div class="mt-2">
+            <span id="kpi-low-stock" class="text-2xl font-black text-orange-600">0</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Reorder needed</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Critical Shortage</span>
+            <i data-lucide="flame" class="w-4 h-4 text-red-500"></i>
+          </div>
+          <div class="mt-2">
+            <span id="kpi-critical-stock" class="text-2xl font-black text-red-600">0</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">&lt;50% threshold buffer</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+            <span>Asset Valuation</span>
+            <i data-lucide="badge-dollar-sign" class="w-4 h-4 text-blue-500"></i>
+          </div>
+          <div class="mt-2">
+            <span id="kpi-total-valuation" class="text-xl font-black text-slate-900">$0</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Replacement value</div>
+        </div>
+
+      </div>
+
+      <!-- Dashboard Visuals & AI Telemetry -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Equipment Distribution Chart -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i>
+              Equipment by Category
+            </h3>
+            <span class="text-[11px] text-slate-400">All Labs</span>
+          </div>
+          <div class="h-60 relative">
+            <canvas id="chart-categories"></canvas>
+          </div>
+        </div>
+
+        <!-- Middle: AI Health & Predictive Risk Distribution -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+              <i data-lucide="activity" class="w-4 h-4 text-emerald-500"></i>
+              Predictive Health Telemetry
+            </h3>
+            <span class="text-[11px] text-emerald-600 font-bold">AI Monitored</span>
+          </div>
+          <div class="h-60 relative">
+            <canvas id="chart-health"></canvas>
+          </div>
+        </div>
+
+        <!-- Right: AI Predictive Anomaly Box -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+              <i data-lucide="cpu" class="w-4 h-4 text-purple-600"></i>
+              AI Predictive Failure Alerts
+            </h3>
+            <button onclick="AIAgent.sendPrompt('Run predictive maintenance diagnostics')" class="text-xs text-indigo-600 hover:underline">
+              Analyze Now
+            </button>
+          </div>
+          <div id="dashboard-predictive-list" class="space-y-3 overflow-y-auto max-h-60">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Dashboard: Recent Activity Audit Logs -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+            <i data-lucide="history" class="w-4 h-4 text-slate-500"></i>
+            Live Activity Audit Trail
+          </h3>
+          <span class="text-xs text-slate-400">Immutable transaction log</span>
+        </div>
+        <div id="dashboard-recent-logs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: ASSETS REGISTRY -->
+    <div id="tab-assets" class="tab-content-panel hidden space-y-4">
+      
+      <!-- Top Actions Bar -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          
+          <!-- Category Filter -->
+          <select id="filter-asset-category" onchange="App.filterAssets()" class="bg-slate-50 border border-slate-200 rounded-lg text-xs px-3 py-2 text-slate-700 focus:outline-none">
+            <option value="All">All Categories</option>
+            <option value="Analytical & Separation">Analytical & Separation</option>
+            <option value="Cold-Chain & Storage">Cold-Chain & Storage</option>
+            <option value="Genomics & Molecular">Genomics & Molecular</option>
+            <option value="Bio-Containment & Safety">Bio-Containment & Safety</option>
+            <option value="Metrology & Measurement">Metrology & Measurement</option>
+            <option value="Imaging & Microscopy">Imaging & Microscopy</option>
+            <option value="Sterilization & Thermal">Sterilization & Thermal</option>
+            <option value="General Lab Infrastructure">General Lab Infrastructure</option>
+          </select>
+
+          <!-- Status Filter -->
+          <select id="filter-asset-status" onchange="App.filterAssets()" class="bg-slate-50 border border-slate-200 rounded-lg text-xs px-3 py-2 text-slate-700 focus:outline-none">
+            <option value="All">All Statuses</option>
+            <option value="Operational">Operational</option>
+            <option value="In-Use">In-Use</option>
+            <option value="Warning">Warning / Telemetry Alert</option>
+            <option value="Maintenance Due">Maintenance Due</option>
+            <option value="Repair Required">Repair Required</option>
+          </select>
+
+          <!-- Search Input -->
+          <input 
+            type="text" 
+            id="filter-asset-search" 
+            oninput="App.filterAssets()" 
+            placeholder="Filter assets..." 
+            class="bg-slate-50 border border-slate-200 rounded-lg text-xs px-3 py-2 text-slate-700 focus:outline-none w-48"
+          >
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="App.exportAuditReport('csv')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            Export CSV
+          </button>
+          
+          <button onclick="App.openAddAssetModal()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm role-admin-only">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+            Register New Asset
+          </button>
+        </div>
+      </div>
+
+      <!-- Assets Table -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <th class="p-3">Asset ID</th>
+              <th class="p-3">Equipment & Model</th>
+              <th class="p-3">Category</th>
+              <th class="p-3">Location & Custodian</th>
+              <th class="p-3">Status / Calib.</th>
+              <th class="p-3">AI Health</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="assets-table-body" class="divide-y divide-slate-100">
+            <!-- Injected via JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- TAB 3: CONSUMABLES & CHEMICALS -->
+    <div id="tab-consumables" class="tab-content-panel hidden space-y-4">
+      
+      <!-- Notice & Guidance -->
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-blue-900">
+        <div class="flex items-start gap-2.5">
+          <i data-lucide="shield-alert" class="w-5 h-5 text-indigo-600 shrink-0 mt-0.5"></i>
+          <div>
+            <span class="font-bold">Chemical & Reagent Safety & Real-Time Stock Tracking:</span>
+            <p class="text-blue-800 text-[11px] mt-0.5">Track hazardous solvents, enzymes, cell culture plastics, and disposables. Automated purchase orders are triggered once stock drops below the safe operating buffer.</p>
+          </div>
+        </div>
+        <button onclick="AIAgent.sendPrompt('Show all consumables running low on stock')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shrink-0 text-xs">
+          AI Shortage Check
+        </button>
+      </div>
+
+      <!-- Consumables Table -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <th class="p-3">Catalog #</th>
+              <th class="p-3">Item Name & Supplier</th>
+              <th class="p-3">Hazard / Class</th>
+              <th class="p-3">Storage Location</th>
+              <th class="p-3">Stock Level</th>
+              <th class="p-3">Threshold Status</th>
+              <th class="p-3 text-right">Inventory Actions</th>
+            </tr>
+          </thead>
+          <tbody id="consumables-table-body" class="divide-y divide-slate-100">
+            <!-- Injected via JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- TAB 4: MAINTENANCE & PREDICTIVE HEALTH -->
+    <div id="tab-maintenance" class="tab-content-panel hidden space-y-6">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+          <h2 class="font-bold text-base text-slate-900">Preventive Maintenance & Calibration Management</h2>
+          <p class="text-xs text-slate-500">Automated scheduling based on MTBF runtime, manufacturer recommendations, and sensor telemetry.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="AIAgent.sendPrompt('Which equipment is overdue for calibration?')" class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            AI Calibration Audit
+          </button>
+        </div>
+      </div>
+
+      <!-- Maintenance Columns -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Overdue Tasks -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b pb-2 border-slate-200">
+            <h3 class="font-bold text-xs text-red-600 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+              Overdue / Critical Tasks
+            </h3>
+            <span class="text-xs text-slate-400 font-mono">Requires Action</span>
+          </div>
+          <div id="maintenance-overdue-list" class="space-y-3">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Upcoming Tasks -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b pb-2 border-slate-200">
+            <h3 class="font-bold text-xs text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+              Scheduled (Next 30 Days)
+            </h3>
+            <span class="text-xs text-slate-400 font-mono">Preventive</span>
+          </div>
+          <div id="maintenance-upcoming-list" class="space-y-3">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Completed History -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b pb-2 border-slate-200">
+            <h3 class="font-bold text-xs text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              Service Records (Completed)
+            </h3>
+            <span class="text-xs text-slate-400 font-mono">Compliance History</span>
+          </div>
+          <div id="maintenance-completed-list" class="space-y-3">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 5: USAGE ANALYTICS -->
+    <div id="tab-analytics" class="tab-content-panel hidden space-y-6">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+          <h2 class="font-bold text-base text-slate-900">Institutional Usage Reporting & Analytics</h2>
+          <p class="text-xs text-slate-500">Asset utilization rates, maintenance expenditures, equipment downtime, and consumable burn trends.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="App.exportAuditReport('csv')" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+            Export Full Audit (CSV)
+          </button>
+          <button onclick="App.exportAuditReport('json')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+            <i data-lucide="file-code" class="w-3.5 h-3.5"></i>
+            Database Dump (JSON)
+          </button>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Utilization by Department -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-sm text-slate-800 mb-1 flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i>
+            Equipment Utilization Rates by Lab Facility (%)
+          </h3>
+          <p class="text-xs text-slate-400 mb-4">Active operational vs idle hours</p>
+          <div class="h-64 relative">
+            <canvas id="chart-utilization"></canvas>
+          </div>
+        </div>
+
+        <!-- Maintenance Spend vs Downtime -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-sm text-slate-800 mb-1 flex items-center gap-2">
+            <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i>
+            Maintenance Costs ($) & Equipment Downtime (Hours)
+          </h3>
+          <p class="text-xs text-slate-400 mb-4">Historical 6-month expenditure trend</p>
+          <div class="h-64 relative">
+            <canvas id="chart-costs"></canvas>
+          </div>
+        </div>
+
+        <!-- Consumables Burn Rate vs Safety Threshold -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+          <h3 class="font-bold text-sm text-slate-800 mb-1 flex items-center gap-2">
+            <i data-lucide="boxes" class="w-4 h-4 text-emerald-600"></i>
+            Consumable Stock Levels vs Minimum Safe Operating Buffer
+          </h3>
+          <p class="text-xs text-slate-400 mb-4">Key reagents, solvents, and disposable plasticware</p>
+          <div class="h-64 relative">
+            <canvas id="chart-burn-rate"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 6: ERP & PROCUREMENT INTEGRATION -->
+    <div id="tab-procurement" class="tab-content-panel hidden space-y-4">
+      
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-base text-slate-900">Institutional ERP & Finance Pipeline</span>
+            <span class="bg-emerald-100 text-emerald-800 text-[11px] font-semibold px-2 py-0.5 rounded">Connected: SAP Ariba / Oracle Financials</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Automated purchase requisitions generated from low-stock triggers with vendor catalogue pricing.</p>
+        </div>
+        <div class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200 font-mono">
+          Endpoint: <code>POST /api/procurement/order</code> (Webhook Active)
+        </div>
+      </div>
+
+      <!-- Orders List -->
+      <div id="procurement-orders-list" class="space-y-3">
+        <!-- Injected via JS -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- MODALS -->
+  <!-- ============================================================ -->
+
+  <!-- Modal: Add New Asset -->
+  <div id="modal-add-asset" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i>
+          Register New Laboratory Asset
+        </h3>
+        <button onclick="App.closeModal('modal-add-asset')" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+
+      <form onsubmit="App.handleAddAssetSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Equipment Name *</label>
+          <input type="text" name="name" required placeholder="e.g. Sorvall Legend X1R Centrifuge" class="w-full p-2 border border-slate-300 rounded-lg">
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Category *</label>
+            <select name="category" class="w-full p-2 border border-slate-300 rounded-lg">
+              <option value="Analytical & Separation">Analytical & Separation</option>
+              <option value="Cold-Chain & Storage">Cold-Chain & Storage</option>
+              <option value="Genomics & Molecular">Genomics & Molecular</option>
+              <option value="Bio-Containment & Safety">Bio-Containment & Safety</option>
+              <option value="Metrology & Measurement">Metrology & Measurement</option>
+              <option value="Imaging & Microscopy">Imaging & Microscopy</option>
+              <option value="Sterilization & Thermal">Sterilization & Thermal</option>
+              <option value="General Lab Infrastructure">General Lab Infrastructure</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Manufacturer *</label>
+            <input type="text" name="manufacturer" required placeholder="e.g. Thermo Fisher" class="w-full p-2 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Model Number</label>
+            <input type="text" name="model" placeholder="e.g. X1R-Refrig" class="w-full p-2 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Serial Number *</label>
+            <input type="text" name="serialNumber" required placeholder="e.g. SN-8829410" class="w-full p-2 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Physical Location (Room & Bench) *</label>
+          <input type="text" name="location" required placeholder="e.g. Central Bio Lab - Room 204 (Bench B1)" class="w-full p-2 border border-slate-300 rounded-lg">
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Purchase Cost ($)</label>
+            <input type="number" name="purchaseCost" placeholder="4500" class="w-full p-2 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Warranty Expiry</label>
+            <input type="date" name="warrantyExpiry" class="w-full p-2 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Service Interval (Days)</label>
+            <input type="number" name="maintenanceIntervalDays" value="180" class="w-full p-2 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Description & Key Specs</label>
+          <textarea name="description" rows="2" placeholder="Rotors included, power rating, specialized accessories..." class="w-full p-2 border border-slate-300 rounded-lg"></textarea>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" onclick="App.closeModal('modal-add-asset')" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-sm">Save & Generate QR Tag</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Asset Tag & Barcode (Printable) -->
+  <div id="modal-asset-tag" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 no-print">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <i data-lucide="tag" class="w-4 h-4 text-indigo-600"></i>
+          Laboratory Asset Identification Tag
+        </h3>
+        <button onclick="App.closeModal('modal-asset-tag')" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+
+      <!-- Printable Area -->
+      <div id="printable-tag-area" class="border-2 border-slate-800 rounded-xl p-4 bg-white text-slate-900">
+        <div class="flex items-center justify-between border-b pb-2 mb-3 border-slate-300">
+          <div>
+            <div class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Institutional Asset Tag</div>
+            <div id="tag-asset-id" class="text-lg font-mono font-black text-indigo-900">AST-1001</div>
+          </div>
+          <div class="text-right">
+            <span id="tag-asset-status" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Operational</span>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h4 id="tag-asset-name" class="font-bold text-sm leading-tight text-slate-900 mb-1">Equipment Name</h4>
+          <div class="text-[11px] text-slate-600 space-y-0.5">
+            <div><strong>Location:</strong> <span id="tag-asset-location">Room 204</span></div>
+            <div><strong>Serial No:</strong> <span id="tag-asset-serial" class="font-mono">SN-000000</span></div>
+            <div><strong>Category:</strong> <span id="tag-asset-category">Analytical</span></div>
+            <div><strong>Warranty Until:</strong> <span id="tag-asset-warranty">2027-01-01</span></div>
+            <div><strong>AI Health Score:</strong> <span id="tag-asset-health" class="font-bold text-emerald-600">92%</span></div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200 gap-2">
+          <div id="tag-qr-container" class="shrink-0 bg-white p-1 rounded border border-slate-200">
+            <!-- QR code rendered here -->
+          </div>
+          <div class="flex flex-col items-center justify-center flex-1 overflow-hidden">
+            <svg id="tag-barcode-container" class="w-full max-h-16"></svg>
+            <div class="text-[9px] text-slate-400 mt-1">Scan for maintenance & telemetry</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 flex justify-between gap-2 no-print">
+        <button onclick="App.closeModal('modal-asset-tag')" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-slate-50">Close</button>
+        <button onclick="LabScanner.printAssetTag()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          Print Thermal / Laser Tag
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Barcode / QR Scanner -->
+  <div id="modal-scanner" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <i data-lucide="scan" class="w-4 h-4 text-emerald-600"></i>
+          Scan Equipment Tag
+        </h3>
+        <button onclick="App.closeScannerModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+
+      <!-- Live Video Scan Box -->
+      <div id="qr-reader" class="w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-100 mb-3 min-h-[220px]">
+        <!-- html5-qrcode attaches here -->
+      </div>
+      <p id="camera-notice" class="text-[11px] text-amber-700 bg-amber-50 p-2 rounded hidden mb-3"></p>
+
+      <!-- Instant Simulated Test Barcode Clicks -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Quick Simulation Barcodes (Click to Test):</label>
+        <div id="scanner-sample-buttons" class="flex flex-wrap gap-1.5">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Manual Lookup input -->
+      <div class="pt-3 border-t border-slate-100 flex gap-2">
+        <input type="text" id="manual-scan-input" placeholder="Or enter Asset ID (e.g. AST-1001)..." class="flex-1 p-2 text-xs border border-slate-300 rounded-lg">
+        <button onclick="App.handleScanResult(document.getElementById('manual-scan-input').value)" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold">Lookup</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Equipment Checkout -->
+  <div id="modal-checkout" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <h3 class="font-bold text-slate-900 text-sm">Equipment Check-Out</h3>
+        <button onclick="App.closeModal('modal-checkout')" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">Allocating: <strong id="checkout-asset-name" class="text-slate-800">Asset</strong></p>
+      
+      <form onsubmit="App.handleCheckoutSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Assigned Researcher / Student</label>
+          <input type="text" name="user" required value="Dr. Sarah Chen" class="w-full p-2 border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Experiment / Purpose</label>
+          <input type="text" name="purpose" required placeholder="e.g. Cell fraction centrifugation" class="w-full p-2 border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Expected Return Date</label>
+          <input type="date" name="expectedReturn" required class="w-full p-2 border border-slate-300 rounded-lg">
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="App.closeModal('modal-checkout')" class="px-3 py-1.5 border border-slate-300 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg font-semibold">Confirm Check-Out</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Equipment Checkin -->
+  <div id="modal-checkin" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <h3 class="font-bold text-slate-900 text-sm">Equipment Return & Telemetry</h3>
+        <button onclick="App.closeModal('modal-checkin')" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">Returning: <strong id="checkin-asset-name" class="text-slate-800">Asset</strong></p>
+      
+      <form onsubmit="App.handleCheckinSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Operating Hours Used (hrs)</label>
+          <input type="number" step="0.5" name="loggedHours" value="2.5" required class="w-full p-2 border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Condition & Observation Notes</label>
+          <textarea name="notes" rows="2" placeholder="Cleaned rotor, no abnormal vibration..." class="w-full p-2 border border-slate-300 rounded-lg"></textarea>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="App.closeModal('modal-checkin')" class="px-3 py-1.5 border border-slate-300 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-green-600 text-white rounded-lg font-semibold">Log Return</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Schedule Maintenance -->
+  <div id="modal-schedule-maint" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <h3 class="font-bold text-slate-900 text-sm">Schedule Maintenance / Calibration</h3>
+        <button onclick="App.closeModal('modal-schedule-maint')" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">Target Asset: <strong id="maint-asset-name" class="text-slate-800">Asset</strong></p>
+      
+      <form onsubmit="App.handleScheduleMaintenanceSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Maintenance Task Type</label>
+          <input type="text" name="taskType" required value="Quarterly Preventive Calibration & Lubrication" class="w-full p-2 border border-slate-300 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Frequency</label>
+            <select name="frequency" class="w-full p-2 border border-slate-300 rounded-lg">
+              <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly</option>
+              <option value="Semi-Annual">Semi-Annual</option>
+              <option value="Annual">Annual</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Priority</label>
+            <select name="priority" class="w-full p-2 border border-slate-300 rounded-lg">
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Scheduled Date</label>
+            <input type="date" name="scheduledDate" required class="w-full p-2 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Estimated Cost ($)</label>
+            <input type="number" name="estimatedCost" value="250" class="w-full p-2 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Assigned Technician / Vendor</label>
+          <input type="text" name="assignedTechnician" value="Carlos Gomez (Technician)" class="w-full p-2 border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Task Scope & Notes</label>
+          <textarea name="notes" rows="2" placeholder="Inspect seal wear, verify optical alignment against standards..." class="w-full p-2 border border-slate-300 rounded-lg"></textarea>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="App.closeModal('modal-schedule-maint')" class="px-3 py-1.5 border border-slate-300 rounded-lg">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg font-semibold">Queue Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE-OUT AI COPILOT DRAWER -->
+  <!-- ============================================================ -->
+  <div id="ai-backdrop" onclick="AIAgent.toggleDrawer()" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 transition-opacity"></div>
+
+  <div id="ai-drawer" class="fixed right-0 top-0 bottom-0 w-full sm:w-[460px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col border-l border-slate-200">
+    
+    <!-- Drawer Header -->
+    <div class="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between border-b border-indigo-900">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
+          <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h3 class="font-bold text-sm tracking-tight">LabPulse AI Copilot</h3>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="text-[10px] text-indigo-200">Autonomous Laboratory Intelligence</div>
+        </div>
+      </div>
+      <button onclick="AIAgent.toggleDrawer()" class="p-1 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition">
+        ✕
+      </button>
+    </div>
+
+    <!-- Chat Messages Scroll Area -->
+    <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50">
+      <!-- Injected via JS -->
+    </div>
+
+    <!-- Chat Input Form -->
+    <div class="p-3 bg-white border-t border-slate-200">
+      <div class="flex items-center gap-2 bg-slate-100 rounded-xl p-1.5 border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 transition">
+        <input 
+          type="text" 
+          id="ai-input" 
+          placeholder="Ask AI or type 'Add centrifuge in Room 204'..." 
+          class="flex-1 bg-transparent px-2.5 py-1 text-xs text-slate-800 focus:outline-none placeholder-slate-400"
+        >
+        <button onclick="AIAgent.sendPrompt()" class="p-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow transition">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+      <div class="text-[10px] text-slate-400 text-center mt-1.5">
+        Supports Natural Language Asset Logging, Predictive Diagnostics, and Stock Depletion.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/scanner.js"></script>
+  <script src="js/ai-agent.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
