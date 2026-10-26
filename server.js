@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
 });
 
 // Paths
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = __dirname;
 const ASSETS_FILE = path.join(DATA_DIR, 'assets.json');
 const CONSUMABLES_FILE = path.join(DATA_DIR, 'consumables.json');
 const MAINTENANCE_FILE = path.join(DATA_DIR, 'maintenance.json');
